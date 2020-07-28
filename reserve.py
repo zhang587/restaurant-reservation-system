@@ -1,9 +1,15 @@
+import time
+import datetime
+
+
 class Restaurant:
 
     def __init__(self, num_tables, table_size):
         self.num_tables = num_tables
         self.table_size = table_size
         self.table_flags = ["reservable"] * self.num_tables
+        self.ts = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        self.reservation_record = {}
 
     def reserve(self, num_customers) -> bool:
         count_table = 0
@@ -26,15 +32,19 @@ class Restaurant:
                     self.table_flags[i] = 'non-reservable'
                     count += 1
                 if count == num_reserved:
+                    self.reservation_record[self.ts] = ["non-reservable"]*count
                     break
             return True
 
 
 if __name__ == "__main__":
-    restaurant = Restaurant(10, 4)
+    restaurant = Restaurant(3, 4)
     print(restaurant.reserve(4))
     print(restaurant.table_flags)
+    print(restaurant.reservation_record)
     print(restaurant.reserve(4))
     print(restaurant.table_flags)
-    print(restaurant.reserve(30))
+    print(restaurant.reservation_record)
+    print(restaurant.reserve(4))
     print(restaurant.table_flags)
+    print(restaurant.reservation_record)
