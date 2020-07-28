@@ -27,6 +27,14 @@ class Restaurant:
                     count += 1
                 if count == num_reserved:
                     break
-
-            #self.table_flags = [[flag if flag != 'reservable' else 'non-reservable' for flag in self.table_flags] for n in list(range(num_reserved))]
             return True
+
+
+if __name__ == "__main__":
+    restaurant = Restaurant(10, 4)
+    print(restaurant.reserve(4))
+    print(restaurant.table_flags)
+    print(restaurant.reserve(4))
+    print(restaurant.table_flags)
+    print(restaurant.reserve(30))
+    print(restaurant.table_flags)
