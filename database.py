@@ -9,7 +9,7 @@ cursor = conn.cursor()
 
 # Preparing SQL query to INSERT a record into the database.
 sql = """INSERT INTO reservation(
-   table_id, timestamp, reserved)
+   table_id, ts, reserved)
    VALUES ('1', '2020-08-02 20:27:59', 'True')"""
 
 try:
