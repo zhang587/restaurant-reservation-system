@@ -8,6 +8,8 @@ import mysql.connector
 
 app = Flask(__name__)
 
+
+reservation_id = 0
 reservations = [
     {
         'id': 1,
@@ -31,11 +33,15 @@ def reserve():
 
     party_size = request.json["party_size"]
     restaurant_id = request.json["restaurant"]
+    ##todo: get reservation id here
 
     sql_cmd_get_num_seats_available = f'select num_seats_available from restaurant where restaurant_id = {restaurant_id};'
     num_seats_available = db_conn_read(sql_cmd_input=sql_cmd_get_num_seats_available)
     if party_size <= num_seats_available:
+        global reservation_id
+        reservation_id += 1
         reservation = {
+            'id': reservation_id,
             'restaurant': restaurant_id,
             'party_size': party_size,
             'done': True
@@ -49,7 +55,23 @@ def reserve():
 
         return jsonify({'task': reservation}), 201
     else:
-        pass
+        raise ValueError(f"The restaurant {restaurant_id} is full.")
+
+# @app.route('/reservations', methods=['POST'])
+# def update_reservation(reservation_id, new_party_size):
+#     exist_reservation = get_reservation(reservation_id)
+#     exist_party_size = exist_reservation["party_size"]
+#     restaurant_id = exist_reservation["restaurant"]
+#     if exist_party_size > new_party_size:
+#         print("can reserve")
+#     else:
+#         sql_cmd_get_num_seats_available = f'select num_seats_available from restaurant where restaurant_id = {restaurant_id};'
+#         num_seats_available = db_conn_read(sql_cmd_input=sql_cmd_get_num_seats_available)
+#         current_capacity = num_seats_available + exist_party_size
+#         reserve()
+
+
+
 
 
 @app.route('/reservations/<int:reservation_id>', methods=['GET'])
