@@ -32,11 +32,9 @@ def reserve():
     party_size = request.json["party_size"]
     restaurant_id = request.json["restaurant"]
 
-    sql_cmd_get_max_capacity = f'select max_capacity from restaurant where restaurant_id = {restaurant_id};'
-    max_capacity = db_conn(sql_cmd_input=sql_cmd_get_max_capacity)
-    sql_cmd_get_curr_capacity = f'select current_capacity from restaurant where restaurant_id = {restaurant_id};'
-    curr_capacity = db_conn(sql_cmd_input=sql_cmd_get_curr_capacity)
-    if party_size >= max_capacity - curr_capacity:
+    sql_cmd_get_num_seats_available = f'select num_seats_available from restaurant where restaurant_id = {restaurant_id};'
+    num_seats_available = db_conn_read(sql_cmd_input=sql_cmd_get_num_seats_available)
+    if party_size <= num_seats_available:
         reservation = {
             'restaurant': restaurant_id,
             'party_size': party_size,
@@ -44,8 +42,10 @@ def reserve():
         }
         reservations.append(reservation)
 
-        # todo: write to database
-        sql_cmd_get_max_capacity = f'select max_capacity from restaurant where restaurant_id = {restaurant_id};'
+        # write to database
+        num_seats_available = num_seats_available - party_size
+        sql_cmd_update_num_seats_available = f'update restaurant set num_seats_available = {num_seats_available} where restaurant_id = {restaurant_id};'
+        db_conn_write(sql_cmd_input=sql_cmd_update_num_seats_available)
 
         return jsonify({'task': reservation}), 201
     else:
@@ -74,33 +74,57 @@ def index():
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
-
-def db_conn(sql_cmd_input):
+def db_conn():
     # establishing the connection
     conn = mysql.connector.connect(
-        user='root', password='password', host='127.0.0.1', database='mysql')
+        user='shay', password='12345', host='127.0.0.1', database='mysql')
+    return conn
+
+
+def db_conn_read(sql_cmd_input):
+    # establishing the connection
+    conn = db_conn()
 
     # Creating a cursor object using the cursor() method
     cursor = conn.cursor()
 
-    # Preparing SQL query to INSERT a record into the database.
-    sql_cmd = sql_cmd_input
-
     try:
         # Executing the SQL command
-        cursor.execute(sql_cmd)
+        cursor.execute(sql_cmd_input)
         res = cursor.fetchall()
+
         # Commit your changes in the database
         conn.commit()
         return res[0][0]
 
-    except:
+    except Exception as e:
+        print(e)
         # Rolling back in case of error
         conn.rollback()
 
     # Closing the connection
     conn.close()
 
+def db_conn_write(sql_cmd_input):
+    # establishing the connection
+    conn = db_conn()
+
+    # Creating a cursor object using the cursor() method
+    cursor = conn.cursor()
+
+    try:
+        # Executing the SQL command
+        cursor.execute(sql_cmd_input)
+
+        conn.commit()
+
+    except Exception as e:
+        print(e)
+        # Rolling back in case of error
+        conn.rollback()
+
+    # Closing the connection
+    conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
